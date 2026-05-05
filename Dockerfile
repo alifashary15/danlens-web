@@ -1,4 +1,4 @@
-FROM thecodingmachine/php:8.2-v4-apache
+FROM thecodingmachine/php:8.4-v4-apache
 
 # Salin semua file proyek ke dalam container
 COPY --chown=docker:docker . .
