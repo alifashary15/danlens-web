@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Peta')
+@section('title', 'Maps')
 
 @push('styles')
 <style>
@@ -9,12 +9,12 @@
     ───────────────────────────────────────── */
 
     /* Remove footer gap for maps page */
-    body.maps-page > footer { display: none; }
+    body.maps-page > footer
 
     .maps-wrapper {
-        display: flex;
-        height: calc(100vh - 64px);
-        overflow: hidden;
+    display: flex;
+    height: calc(100vh - 64px - 72px); /* 72px = tinggi footer */
+    overflow: hidden;
     }
 
     /* ── SIDEBAR ── */

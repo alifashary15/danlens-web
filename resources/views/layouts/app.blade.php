@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'KelGIS') &mdash; Peta Interaktif Kota Medan</title>
+    {{-- Title: "Home — DanLens" atau "Maps — DanLens" --}}
+    <title>@yield('title', 'Home') &mdash; DanLens</title>
 
     {{-- Google Fonts (DM Sans untuk body) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,12 +15,6 @@
     {{-- Leaflet CSS --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-    {{--
-        FONT UTENDO — @font-face dipisah ke tag style sendiri
-        agar VS Code CSS linter tidak salah baca @ sebagai Blade directive.
-        Pastikan file ada di: public/fonts/Utendo-Regular.ttf
-                              public/fonts/Utendo-Bold.ttf
-    --}}
     <style>
         @font-face {
             font-family: 'Utendo';
@@ -102,11 +97,6 @@
             align-items: center;
             gap: 8px;
         }
-        .navbar-brand .dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: var(--matcha);
-        }
 
         .navbar-links {
             margin-left: auto;
@@ -123,12 +113,54 @@
             color: var(--ink-mid);
             transition: background .2s, color .2s;
         }
-        .navbar-links a:hover,
+        .navbar-links a:hover { background: var(--matcha-ghost); color: var(--matcha-deep); }
         .navbar-links a.active {
-            background: var(--matcha-ghost);
+            background: var(--matcha-pale);
             color: var(--matcha-deep);
+            font-weight: 600;
         }
-        .navbar-links a.active {
+
+        /* ── HAMBURGER ── */
+        .navbar-toggle {
+            display: none;
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--radius-sm);
+            color: var(--ink);
+            transition: background .2s;
+        }
+        .navbar-toggle:hover { background: var(--matcha-ghost); }
+        .navbar-toggle svg { display: block; }
+
+        /* ── MOBILE MENU ── */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 64px; left: 0; right: 0;
+            background: rgba(255,255,255,.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 899;
+            padding: 12px 20px 20px;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: var(--shadow-md);
+        }
+        .mobile-menu.open { display: flex; }
+        .mobile-menu a {
+            display: block;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: .95rem;
+            font-weight: 500;
+            color: var(--ink-mid);
+            transition: background .2s, color .2s;
+        }
+        .mobile-menu a:hover { background: var(--matcha-ghost); color: var(--matcha-deep); }
+        .mobile-menu a.active {
             background: var(--matcha-pale);
             color: var(--matcha-deep);
             font-weight: 600;
@@ -163,7 +195,6 @@
             border: none;
         }
         .btn:hover { transform: translateY(-1px); }
-
         .btn-primary {
             background: var(--matcha);
             color: var(--white);
@@ -197,6 +228,14 @@
         .badge-kemasyarakatan { background: #ede9fe; color: #4c1d95; }
         .badge-transportasi   { background: #d1fae5; color: #065f46; }
         .badge-default        { background: var(--matcha-pale); color: var(--matcha-deep); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .navbar { padding: 0 20px; }
+            .navbar-links { display: none; }
+            .navbar-toggle { display: block; }
+            .footer { padding: 20px; }
+        }
     </style>
 
     @stack('styles')
@@ -211,21 +250,37 @@
         </svg>
         DanLens
     </a>
+
+    {{-- Desktop links --}}
     <ul class="navbar-links">
         <li>
-            <a href="{{ route('home') }}"
-               class="{{ request()->routeIs('home') ? 'active' : '' }}">
-                Beranda
+            <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">
+                Home
             </a>
         </li>
         <li>
-            <a href="{{ route('maps') }}"
-               class="{{ request()->routeIs('maps') ? 'active' : '' }}">
-                Peta
+            <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') ? 'active' : '' }}">
+                Maps
             </a>
         </li>
     </ul>
+
+    {{-- Hamburger button (mobile) --}}
+    <button class="navbar-toggle" id="navToggle" aria-label="Toggle menu">
+        <svg id="iconHamburger" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg id="iconClose" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+    </button>
 </nav>
+
+{{-- Mobile menu --}}
+<div class="mobile-menu" id="mobileMenu">
+    <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">🏠 Home</a>
+    <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') ? 'active' : '' }}">🗺 Maps</a>
+</div>
 
 <main class="page-content">
     @yield('content')
@@ -239,9 +294,31 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+    // Navbar scroll shadow
     const nav = document.getElementById('mainNav');
     window.addEventListener('scroll', () => {
         nav.classList.toggle('scrolled', window.scrollY > 10);
+    });
+
+    // Hamburger toggle
+    const toggle = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const iconHamburger = document.getElementById('iconHamburger');
+    const iconClose = document.getElementById('iconClose');
+
+    toggle.addEventListener('click', () => {
+        const isOpen = mobileMenu.classList.toggle('open');
+        iconHamburger.style.display = isOpen ? 'none' : 'block';
+        iconClose.style.display = isOpen ? 'block' : 'none';
+    });
+
+    // Tutup menu kalau klik link
+    mobileMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.remove('open');
+            iconHamburger.style.display = 'block';
+            iconClose.style.display = 'none';
+        });
     });
 </script>
 
