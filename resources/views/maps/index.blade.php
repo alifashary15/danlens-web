@@ -9,12 +9,12 @@
     ───────────────────────────────────────── */
 
     /* Remove footer gap for maps page */
-    body.maps-page > footer
+    body.maps-page > footer { display: none; }
 
     .maps-wrapper {
-    display: flex;
-    height: calc(100vh - 64px - 72px); /* 72px = tinggi footer */
-    overflow: hidden;
+        display: flex;
+        height: calc(100vh - 64px);
+        overflow: hidden;
     }
 
     /* ── SIDEBAR ── */
