@@ -12,6 +12,10 @@ class MapsController extends Controller
     // Base URL Supabase Storage
     private const SUPABASE_STORAGE = 'https://rnafixrgoucrplssoqtm.supabase.co/storage/v1/object/public/tempat_images/';
 
+    /**
+     * Maps Point — tampilkan peta dengan marker titik lokasi
+     * GET /maps
+     */
     public function index()
     {
         $kategoris  = Kategori::orderBy('id')->get();
@@ -21,7 +25,27 @@ class MapsController extends Controller
     }
 
     /**
-     * API endpoint — return JSON untuk Leaflet
+     * Maps Polygon — tampilkan peta dengan polygon kecamatan
+     * GET /maps/polygon
+     */
+    public function polygon()
+    {
+        $kecamatans = Kecamatan::orderBy('nama_kecamatan')->get();
+
+        return view('maps.index_polygon', compact('kecamatans'));
+    }
+
+    /**
+     * Maps Line — tampilkan halaman hitung rute & jarak antar dua titik
+     * GET /maps/line
+     */
+    public function line()
+    {
+        return view('maps.index_line');
+    }
+
+    /**
+     * API endpoint — return JSON titik lokasi untuk Leaflet marker
      * GET /api/tempat?kategori=1&rating_min=3&lat=3.59&lng=98.67&radius=5
      */
     public function apiTempat(Request $request)
@@ -60,6 +84,7 @@ class MapsController extends Controller
                     'detail'      => $t->detail_tempat,
                     'jalan'       => $t->jalan,
                     'kecamatan'   => $t->kecamatan?->nama_kecamatan,
+                    'kecamatan_id'=> $t->kecamatan_id,
                     'kategori'    => $t->kategori?->nama_kategori,
                     'kategori_id' => $t->kategori_id,
                     'rating'      => $t->review_rating,
@@ -81,5 +106,48 @@ class MapsController extends Controller
                 return $data;
             })
         );
+    }
+
+    /**
+     * API endpoint — return JSON kecamatan + geojson + stats tempat
+     * GET /api/kecamatan/polygon
+     */
+    public function apiKecamatanPolygon()
+    {
+        $kecamatans = Kecamatan::orderBy('nama_kecamatan')->get();
+
+        // Hitung stats tempat per kecamatan secara efisien
+        // Ambil semua count sekaligus, group by kecamatan_id & kategori_id
+        $tempats = Tempat::selectRaw('kecamatan_id, kategori_id, COUNT(*) as jumlah')
+            ->groupBy('kecamatan_id', 'kategori_id')
+            ->get();
+
+        // Buat lookup: kecamatan_id → [ kategori_id → count ]
+        $statsMap = [];
+        foreach ($tempats as $row) {
+            $statsMap[$row->kecamatan_id][$row->kategori_id] = (int) $row->jumlah;
+        }
+
+        $data = $kecamatans->map(function (Kecamatan $kec) use ($statsMap) {
+            $byKat = $statsMap[$kec->id] ?? [];
+
+            $stats = [
+                'total'            => array_sum($byKat),
+                'kuliner'          => $byKat[1] ?? 0,
+                'wisata'           => $byKat[2] ?? 0,
+                'kesehatan'        => $byKat[3] ?? 0,
+                'kemasyarakatan'   => $byKat[4] ?? 0,
+                'transportasi'     => $byKat[5] ?? 0,
+            ];
+
+            return [
+                'id'             => $kec->id,
+                'nama_kecamatan' => $kec->nama_kecamatan,
+                'geojson'        => $kec->geojson,   // raw string — di-parse di JS
+                'stats'          => $stats,
+            ];
+        });
+
+        return response()->json($data);
     }
 }

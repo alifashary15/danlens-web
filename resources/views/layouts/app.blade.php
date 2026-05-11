@@ -240,7 +240,7 @@
 
     @stack('styles')
 </head>
-<body class="{{ request()->routeIs('maps') ? 'maps-page' : '' }}">
+<body class="{{ request()->routeIs('maps', 'maps.polygon', 'maps.line') ? 'maps-page' : '' }}">
 
 <nav class="navbar" id="mainNav">
     <a href="{{ route('home') }}" class="navbar-brand">
@@ -259,8 +259,18 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') ? 'active' : '' }}">
-                Maps
+            <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') && !request()->routeIs('maps.polygon') ? 'active' : '' }}">
+                Maps-Point
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('maps.polygon') }}" class="{{ request()->routeIs('maps.polygon') ? 'active' : '' }}">
+                Maps-Polygon
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('maps.line') }}" class="{{ request()->routeIs('maps.line') ? 'active' : '' }}">
+                Maps-Line
             </a>
         </li>
     </ul>
@@ -279,7 +289,9 @@
 {{-- Mobile menu --}}
 <div class="mobile-menu" id="mobileMenu">
     <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">🏠 Home</a>
-    <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') ? 'active' : '' }}">🗺 Maps</a>
+    <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') && !request()->routeIs('maps.polygon') ? 'active' : '' }}">📍 Maps-Point</a>
+    <a href="{{ route('maps.polygon') }}" class="{{ request()->routeIs('maps.polygon') ? 'active' : '' }}">🗺 Maps-Polygon</a>
+    <a href="{{ route('maps.line') }}" class="{{ request()->routeIs('maps.line') ? 'active' : '' }}">📏 Maps-Line</a>
 </div>
 
 <main class="page-content">
