@@ -4,15 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    {{-- Title: "Home — DanLens" atau "Maps — DanLens" --}}
     <title>@yield('title', 'Home') &mdash; DanLens</title>
 
-    {{-- Google Fonts (DM Sans untuk body) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 
-    {{-- Leaflet CSS --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
@@ -56,9 +53,7 @@
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         html { scroll-behavior: smooth; }
-
         body {
             font-family: var(--font-body);
             font-size: 15px;
@@ -67,7 +62,6 @@
             background: var(--white);
             -webkit-font-smoothing: antialiased;
         }
-
         a { color: inherit; text-decoration: none; }
 
         /* ── NAVBAR ── */
@@ -240,7 +234,7 @@
 
     @stack('styles')
 </head>
-<body class="{{ request()->routeIs('maps', 'maps.polygon', 'maps.line') ? 'maps-page' : '' }}">
+<body class="{{ request()->routeIs('maps') ? 'maps-page' : '' }}">
 
 <nav class="navbar" id="mainNav">
     <a href="{{ route('home') }}" class="navbar-brand">
@@ -251,7 +245,6 @@
         DanLens
     </a>
 
-    {{-- Desktop links --}}
     <ul class="navbar-links">
         <li>
             <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">
@@ -259,23 +252,12 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') && !request()->routeIs('maps.polygon') ? 'active' : '' }}">
-                Maps-Point
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('maps.polygon') }}" class="{{ request()->routeIs('maps.polygon') ? 'active' : '' }}">
-                Maps-Polygon
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('maps.line') }}" class="{{ request()->routeIs('maps.line') ? 'active' : '' }}">
-                Maps-Line
+            <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') ? 'active' : '' }}">
+                Maps
             </a>
         </li>
     </ul>
 
-    {{-- Hamburger button (mobile) --}}
     <button class="navbar-toggle" id="navToggle" aria-label="Toggle menu">
         <svg id="iconHamburger" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
@@ -286,12 +268,9 @@
     </button>
 </nav>
 
-{{-- Mobile menu --}}
 <div class="mobile-menu" id="mobileMenu">
     <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">🏠 Home</a>
-    <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') && !request()->routeIs('maps.polygon') ? 'active' : '' }}">📍 Maps-Point</a>
-    <a href="{{ route('maps.polygon') }}" class="{{ request()->routeIs('maps.polygon') ? 'active' : '' }}">🗺 Maps-Polygon</a>
-    <a href="{{ route('maps.line') }}" class="{{ request()->routeIs('maps.line') ? 'active' : '' }}">📏 Maps-Line</a>
+    <a href="{{ route('maps') }}" class="{{ request()->routeIs('maps') ? 'active' : '' }}">📍 Maps</a>
 </div>
 
 <main class="page-content">
@@ -302,34 +281,30 @@
     &copy; {{ date('Y') }} <strong>DanLens</strong> &mdash; Sistem Informasi Geografis Kota Medan
 </footer>
 
-{{-- Leaflet JS --}}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // Navbar scroll shadow
     const nav = document.getElementById('mainNav');
     window.addEventListener('scroll', () => {
         nav.classList.toggle('scrolled', window.scrollY > 10);
     });
 
-    // Hamburger toggle
-    const toggle = document.getElementById('navToggle');
-    const mobileMenu = document.getElementById('mobileMenu');
+    const toggle       = document.getElementById('navToggle');
+    const mobileMenu   = document.getElementById('mobileMenu');
     const iconHamburger = document.getElementById('iconHamburger');
-    const iconClose = document.getElementById('iconClose');
+    const iconClose    = document.getElementById('iconClose');
 
     toggle.addEventListener('click', () => {
         const isOpen = mobileMenu.classList.toggle('open');
         iconHamburger.style.display = isOpen ? 'none' : 'block';
-        iconClose.style.display = isOpen ? 'block' : 'none';
+        iconClose.style.display     = isOpen ? 'block' : 'none';
     });
 
-    // Tutup menu kalau klik link
     mobileMenu.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
             mobileMenu.classList.remove('open');
             iconHamburger.style.display = 'block';
-            iconClose.style.display = 'none';
+            iconClose.style.display     = 'none';
         });
     });
 </script>
